@@ -3,82 +3,46 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>AI Powered Monitoring Dashboard</title>
+    <title>Live Threat Monitor - IDS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: #f4f7f6;
-            padding-top: 30px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .hero {
-            background: #2c3e50;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-        }
-
-        .stat-box {
-            border-radius: 15px;
-            padding: 25px;
-            color: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-        }
-
-        .stat-box:hover {
-            transform: scale(1.05);
-        }
-
-        .table-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .blink_text {
-            animation: blinker 1s linear infinite;
-        }
-
-        @keyframes blinker {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        /* Navbar matching existing styling */
-        .navbar {
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar-brand,
-        .nav-link {
-            color: #4a90e2 !important;
-            font-weight: 600;
-        }
-    </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light fixed-top mb-5">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-shield-alt"></i> AdvancedIDS</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" href="{{url_for('home')}}"><i class="fas fa-shield-alt"></i> AdvancedIDS</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url_for('home')}}">Home</a>
+                        <a class="nav-link" href="{{url_for('analyze')}}">CSV Analysis</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url_for('analyze')}}">Upload</a>
+                        <a class="nav-link active" href="{{url_for('monitoring')}}">Live Stream</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{url_for('monitoring')}}">Live Monitoring</a>
+                        <a class="nav-link" href="{{url_for('logs')}}">Threat Logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{url_for('settings_page')}}" title="Settings"><i class="fas fa-cog"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="theme-toggle nav-link" title="Switch between Dark and Light mode" aria-label="Toggle theme">
+                            <i class="fas fa-moon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -86,42 +50,63 @@
     </nav>
     <br><br><br>
 
-    <div class="container">
-        <div class="hero text-center shadow mt-3 bg-dark">
-            <h1><i class="fas fa-broadcast-tower blink_text text-danger"></i> Live Threat Monitoring</h1>
-            <p>Real-time network traffic analysis using AI</p>
+    <div class="container-fluid px-5">
+        <div class="hero text-center mt-3 position-relative">
+            <h1 class="fw-bold"><i class="fas fa-satellite-dish blink_text text-warning"></i> Command Center XR</h1>
+            <p class="hero-subtitle">Global tracking & real-time deep learning inference</p>
+            <span id="capture-mode-badge" class="badge rounded-pill bg-light text-dark mt-2 badge-small">Connecting to Sniffer...</span>
+            <div class="d-flex justify-content-center gap-3 mt-3">
+                <button class="btn btn-danger-pulse" onclick="triggerSimulatedAttack()" title="Launch Red Team Attack Simulation"><i class="fas fa-biohazard"></i> FIRE RED TEAM SIMULATOR</button>
+                <button id="stop-sim-btn" class="btn btn-outline-warning d-none" onclick="stopSimulatedAttack()" title="Terminate Active Simulation"><i class="fas fa-stop-circle"></i> STOP SIMULATION</button>
+            </div>
         </div>
 
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="stat-box bg-primary text-center">
-                    <h5>TOTAL FLOWS</h5>
-                    <h2 id="total-packets">0</h2>
+                <div class="stat-box text-center" style="border-top: 3px solid #00F7FF;">
+                    <h5 class="text-white-50">TOTAL FLOWS</h5>
+                    <h2 id="total-packets" style="color: #00F7FF;">0</h2>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="stat-box bg-success text-center">
-                    <h5>SAFE (BENIGN)</h5>
-                    <h2 id="benign-count">0</h2>
+                <div class="stat-box text-center" style="border-top: 3px solid #28a745;">
+                    <h5 class="text-white-50">SAFE (BENIGN)</h5>
+                    <h2 id="benign-count" class="text-success">0</h2>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="stat-box bg-danger text-center">
-                    <h5>THREATS DETECTED</h5>
-                    <h2 id="threat-count">0</h2>
+                <div class="stat-box text-center" style="border-top: 3px solid #dc3545;">
+                    <h5 class="text-white-50">THREATS DETECTED</h5>
+                    <h2 id="threat-count" class="text-danger">0</h2>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white p-4 rounded shadow table-container">
-            <table class="table table-hover" id="live-table">
-                <thead class="table-dark" style="position: sticky; top: 0;">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5 class="text-white-50 mb-2"><i class="fas fa-chart-line"></i> Traffic Volume</h5>
+                <div class="panel-container shadow" style="height: 300px;">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5 class="text-white-50 mb-2"><i class="fas fa-globe-americas"></i> Global Threat Map</h5>
+                <div class="panel-container shadow p-1">
+                    <div id="threat-map"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 rounded shadow table-container mb-5">
+            <table class="table table-hover table-borderless" id="live-table">
+                <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
                     <tr>
                         <th>Time</th>
                         <th>Flow ID</th>
                         <th>Source IP</th>
-                        <th>Advanced Threat Label</th>
+                        <th>Threat Classification</th>
                         <th>Severity</th>
+                        <th>OSINT Rep</th>
                         <th>Confidence</th>
                     </tr>
                 </thead>
@@ -132,52 +117,192 @@
         </div>
     </div>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        function triggerSimulatedAttack() {
+            fetch('/simulate_attack', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const stopBtn = document.getElementById('stop-sim-btn');
+                    if(stopBtn) stopBtn.classList.remove('d-none');
+                });
+        }
+
+        function stopSimulatedAttack() {
+            fetch('/stop_simulation', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const stopBtn = document.getElementById('stop-sim-btn');
+                    if(stopBtn) stopBtn.classList.add('d-none');
+                });
+        }
+
+        const map = L.map('threat-map', {
+            center: [20, 0],
+            zoom: 2,
+            zoomControl: false,
+            attributionControl: false,
+            maxBounds: [[-90, -180], [90, 180]],
+            maxBoundsViscosity: 1.0
+        });
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            noWrap: true,
+            bounds: [[-90, -180], [90, 180]]
+        }).addTo(map);
+
+        const markers = [];
+        const customIcon = L.divIcon({
+            className: 'glowing-red-dot',
+            iconSize: [12, 12]
+        });
+
+        function plotThreatOnMap(lat, lon, attackType) {
+            if(!lat || !lon) return;
+            const marker = L.marker([lat, lon], {icon: customIcon}).addTo(map);
+            marker.bindPopup(`<b>Threat!</b><br>${attackType}`).openPopup();
+            
+            // Auto remove marker after 8 seconds
+            setTimeout(() => {
+                map.removeLayer(marker);
+            }, 8000);
+        }
+
+        // --- CHART SETUP ---
         let totalCount = 0;
         let benignCount = 0;
         let threatCount = 0;
 
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        const trafficChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Threat Packets',
+                        borderColor: '#ff4444',
+                        backgroundColor: 'rgba(255, 68, 68, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        data: []
+                    },
+                    {
+                        label: 'Benign Packets',
+                        borderColor: '#00C851',
+                        backgroundColor: 'rgba(0, 200, 81, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        data: []
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: '#333' }, ticks: { color: '#888' } },
+                    y: { grid: { color: '#333' }, ticks: { color: '#888', stepSize: 1 }, beginAtZero: true }
+                },
+                plugins: { legend: { labels: { color: '#fff' } } },
+                animation: { duration: 0 }
+            }
+        });
+
+        let bucketThreats = 0;
+        let bucketBenign = 0;
+
+        setInterval(() => {
+            const timeLabel = new Date().toLocaleTimeString();
+            
+            trafficChart.data.labels.push(timeLabel);
+            trafficChart.data.datasets[0].data.push(bucketThreats);
+            trafficChart.data.datasets[1].data.push(bucketBenign);
+            
+            if (trafficChart.data.labels.length > 20) {
+                trafficChart.data.labels.shift();
+                trafficChart.data.datasets[0].data.shift();
+                trafficChart.data.datasets[1].data.shift();
+            }
+            
+            trafficChart.update();
+            bucketThreats = 0;
+            bucketBenign = 0;
+        }, 2000);
+
+        // --- SSE LOGIC ---
         const evtSource = new EventSource("/stream");
 
         evtSource.onmessage = function (event) {
             const data = JSON.parse(event.data);
 
-            // Update stats
+            // Mode Indicator Logic
+            const badge = document.getElementById('capture-mode-badge');
+            if (badge) {
+                if (data.mode === 'live') {
+                    badge.className = 'badge rounded-pill bg-danger text-light mt-2 blink_text';
+                    badge.innerHTML = '<i class="fas fa-broadcast-tower"></i> LIVE NETWORK CAPTURE (en0)';
+                } else if (data.mode === 'red_team') {
+                    badge.className = 'badge rounded-pill bg-danger text-light mt-2 blink_text';
+                    badge.innerHTML = '<i class="fas fa-biohazard"></i> RED TEAM SIMULATION SCENARIO ACTIVE';
+                } else {
+                    badge.className = 'badge rounded-pill bg-secondary text-light mt-2';
+                    badge.innerHTML = '<i class="fas fa-desktop"></i> DEMO SIMULATOR (Run `sudo python app.py` for live)';
+                }
+            }
+
             totalCount++;
             if (data.is_threat) {
                 threatCount++;
+                bucketThreats++;
+                
+                // Plot on the new map
+                if(data.lat !== null && data.lon !== null) {
+                    plotThreatOnMap(data.lat, data.lon, data.Label);
+                }
+
             } else {
                 benignCount++;
+                bucketBenign++;
             }
 
             document.getElementById('total-packets').innerText = totalCount;
             document.getElementById('benign-count').innerText = benignCount;
             document.getElementById('threat-count').innerText = threatCount;
 
-            // Prepend row to table
             const tbody = document.getElementById('live-table-body');
             const newRow = document.createElement('tr');
 
             if (data.is_threat) {
-                newRow.className = "table-danger fw-bold";
+                newRow.style.backgroundColor = "rgba(220, 53, 69, 0.2)";
             }
 
             const timeNow = new Date().toLocaleTimeString();
             const severityBadge = data.is_threat ? '<span class="badge bg-danger blink_text">High</span>' : '<span class="badge bg-secondary">Normal</span>';
 
             newRow.innerHTML = `
-                <td>${timeNow}</td>
-                <td>${data.Flow_ID}</td>
-                <td>${data.Source_IP}</td>
-                <td>${data.Label}</td>
-                <td>${severityBadge}</td>
-                <td>${data.Conf}</td>
+                <td>\${timeNow}</td>
+                <td><span style="color: #888;">\${data.Flow_ID}</span></td>
+                <td><span style="color: #00F7FF;">\${data.Source_IP}</span></td>
+                <td class="\${data.is_threat ? 'text-danger fw-bold' : ''}">\${data.Label}</td>
+                <td>\${severityBadge}</td>
+                <td>
+                    <span class="badge \${data.osint_score > 50 ? 'bg-warning text-dark' : 'bg-info'}">
+                        \${data.osint_score > 0 ? data.osint_score + '%' : 'Clean'}
+                    </span>
+                </td>
+                <td><span style="color: \${data.is_threat ? '#ff4444' : '#00C851'};">\${data.Conf}</span></td>
             `;
 
             tbody.insertBefore(newRow, tbody.firstChild);
 
-            // Keep table from growing infinitely
-            if (tbody.children.length > 100) {
+            if (tbody.children.length > 50) {
                 tbody.removeChild(tbody.lastChild);
             }
         };
@@ -187,5 +312,4 @@
         };
     </script>
 </body>
-
 </html>

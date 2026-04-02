@@ -7,248 +7,171 @@
     <title>AI Powered Intrusion Detection System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #73abe7 0%, #6610f2 100%);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar-brand,
-        .nav-link {
-            color: white !important;
-        }
-
-        .hero {
-            background: linear-gradient(135deg, #a9c9eb 0%, #6610f2 100%);
-            color: white;
-            padding: 100px 0;
-            margin-bottom: 30px;
-        }
-
-        .feature-card {
-            border: none;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #007bff;
-        }
-
-        .btn-custom {
-            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-custom:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        footer {
-            background-color: #60a5e9;
-            color: white;
-            padding: 30px 0;
-        }
-
-        a {
-            text-decoration: none;
-            color: black;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top mb-5">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-shield-alt"></i> AI Powered IDS</a>
+            <a class="navbar-brand" href="{{url_for('home')}}"><i class="fas fa-shield-alt"></i> AdvancedIDS</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#features">Features</a>
+                        <a class="nav-link" href="{{url_for('analyze')}}">CSV Analysis</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#upload">Upload</a>
+                        <a class="nav-link" href="{{url_for('monitoring')}}">Live Stream</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{url_for('monitoring')}}">Live Monitoring</a>
+                        <a class="nav-link" href="{{url_for('logs')}}">Threat Logs</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#attacks">Attack Types</a>
+                        <a class="nav-link" href="{{url_for('settings_page')}}" title="Settings"><i class="fas fa-cog"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="theme-toggle nav-link" title="Toggle Dark/Light Mode">
+                            <i class="fas fa-moon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+    <br><br><br>
 
-    <header class="hero text-center">
+    <header class="hero text-center mt-3">
         <div class="container">
-            <h1 class="display-4">AI Powered Intrusion Detection System</h1>
-            <p class="lead">Protect your network with cutting-edge AI and machine learning technology</p>
-            <a href="#features" class="btn btn-lg btn-custom mt-3">Explore Features</a>
+            <h1 class="display-4">Zero-Day Network Threat Detection</h1>
+            <p class="lead" style="color: #f0f0f0;">Protect your infrastructure with AI-based deep learning traffic inference</p>
+            
+            <div class="row mt-5 justify-content-center">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h3>{{stats.total_threats}}</h3>
+                        <p class="m-0" style="color: #f8f9fa;">Total Logged Threats</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h3>{{stats.threshold}}%</h3>
+                        <p class="m-0" style="color: #f8f9fa;">Alert Confidence Threshold</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h3 class="text-truncate px-2">{{stats.latest_threat.label if stats.latest_threat else 'None'}}</h3>
+                        <p class="m-0" style="color: #f8f9fa;">Recent Threat Type</p>
+                    </div>
+                </div>
+            </div>
+
+            <a href="{{url_for('monitoring')}}" class="btn btn-lg btn-custom mt-5">Launch Command Center XR <i class="fas fa-rocket ms-2"></i></a>
         </div>
     </header>
 
     <main class="container">
         <section id="features" class="py-5">
-            <h2 class="text-center mb-5">Key Features</h2>
+            <h2 class="text-center mb-5 section-title">System Capabilities</h2>
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <div class="card feature-card h-100">
-                        <a href="{{url_for('analyze')}}">
+                        <a href="{{url_for('analyze')}}" class="text-decoration-none feature-link" title="Analyze Batch PCAP/CSV Files">
                             <div class="card-body text-center">
                                 <i class="fas fa-upload feature-icon"></i>
-                                <h5 class="card-title">Data Upload</h5>
-                                <p class="card-text">Easily upload and analyze packet captures or CSV files.</p>
+                                <h5 class="card-title fw-bold">Batch PCAP/CSV Analysis</h5>
+                                <p class="card-text text-muted">Upload historical CIC-IDS format logs to get instant AI-based classification and generated PDF/CSV reports.</p>
                             </div>
                         </a>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
                     <div class="card feature-card h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-chart-line feature-icon"></i>
-                            <h5 class="card-title">Real-Time Monitoring</h5>
-                            <p class="card-text">Continuous analysis of network traffic for immediate threat detection.
-                            </p>
-                        </div>
+                        <a href="{{url_for('monitoring')}}" class="text-decoration-none feature-link" title="Monitor Real-Time Network Traffic">
+                            <div class="card-body text-center">
+                                <i class="fas fa-satellite-dish feature-icon"></i>
+                                <h5 class="card-title fw-bold">Real-Time Packets</h5>
+                                <p class="card-text text-muted">Watch true live streaming traffic with deep-learning predictions displayed in a dynamic chart interface.</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
                 <div class="col-md-4 mb-4">
                     <div class="card feature-card h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-shield-virus feature-icon"></i>
-                            <h5 class="card-title">Advanced Threat Detection</h5>
-                            <p class="card-text">Identify and mitigate a wide range of cyber attacks.</p>
-                        </div>
+                        <a href="{{url_for('logs')}}" class="text-decoration-none feature-link" title="View Historical Threat Logs">
+                            <div class="card-body text-center">
+                                <i class="fas fa-database feature-icon"></i>
+                                <h5 class="card-title fw-bold">Historical Threat Logs</h5>
+                                <p class="card-text text-muted">All high-confidence malicious packets are securely vaulted to an internal SQLite database for auditing.</p>
+                            </div>
+                        </a>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="upload" class="py-5">
-            <div class="card feature-card">
-                <div class="card-body text-center">
-                    <h2 class="card-title">Upload Traffic Data</h2>
-                    <p class="card-text">Analyze your network traffic by uploading packet captures (pcap) or CSV files.
-                    </p>
-                    <a href="{{url_for('analyze')}}" class="btn btn-custom">Upload Now</a>
-                </div>
-            </div>
-        </section>
-
-        <section id="monitoring" class="py-5">
-            <div class="card feature-card">
-                <div class="card-body text-center">
-                    <h2 class="card-title">Real-Time Monitoring</h2>
-                    <p class="card-text">Set up continuous monitoring of your network for immediate threat detection.
-                    </p>
-                    <a href="{{url_for('monitoring')}}" class="btn btn-custom">Start Monitoring</a>
                 </div>
             </div>
         </section>
 
         <section id="attacks" class="py-5">
-            <h2 class="text-center mb-4">Detectable Attack Types</h2>
+            <h2 class="text-center mb-4 section-title">Threat Taxonomy</h2>
             <div class="row">
                 <div class="col-md-6 mb-4">
                     <div class="card feature-card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title"><i class="fas fa-server text-danger"></i> DoS and DDoS Attacks</h5>
-                            <p class="card-text">Detect and mitigate Denial of Service and Distributed Denial of Service
-                                attacks.</p>
-                        </div>
+                        <a href="{{ url_for('logs', attack_type='DoS') }}" class="text-decoration-none feature-link" title="Investigate DoS/DDoS Incidents">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-server text-danger"></i> DoS / DDoS Operations</h5>
+                                <p class="card-text text-muted">Detect structural anomalies associated with DoS Hulk, Slowloris, and massive volumetric flooding.</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="card feature-card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title"><i class="fas fa-search text-warning"></i> Port and Vulnerability
-                                Scans</h5>
-                            <p class="card-text">Identify potential reconnaissance activities targeting your network.
-                            </p>
-                        </div>
+                        <a href="{{ url_for('logs', attack_type='PortScan') }}" class="text-decoration-none feature-link" title="Audit PortScan Reconnaissance">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-search text-warning"></i> PortScanning Recon</h5>
+                                <p class="card-text text-muted">Identify aggressive or stealth TCP/UDP port scans mapping internal network topologies.</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="card feature-card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title"><i class="fas fa-user-secret text-info"></i> Man-in-the-Middle
-                                Attacks</h5>
-                            <p class="card-text">Detect attempts to intercept or manipulate network traffic.</p>
-                        </div>
+                        <a href="{{ url_for('logs', attack_type='Patator') }}" class="text-decoration-none feature-link" title="Review Brute Force Attempts">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-key text-info"></i> Brute Force Attacks</h5>
+                                <p class="card-text text-muted">Identify FTP-Patator, SSH-Patator, and web-based credential stuffing based on timing signatures.</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
                 <div class="col-md-6 mb-4">
                     <div class="card feature-card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title"><i class="fas fa-bug text-success"></i> Malware Communication</h5>
-                            <p class="card-text">Identify and block communication with known malicious command & control
-                                servers.</p>
-                        </div>
+                        <a href="{{ url_for('logs', attack_type='Bot') }}" class="text-decoration-none feature-link" title="Explore Botnet C&C Logs">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-robot text-success"></i> Botnet C&C</h5>
+                                <p class="card-text text-muted">Capture heartbeat communications and automated malware coordination traffic.</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="mt-5">
+    <footer>
         <div class="container text-center">
-            <p>&copy; 2025 AI Powered Intrusion Detection System | Powered by AI & Machine Learning</p>
-            <div class="mt-3">
-                <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="text-white me-3"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" class="text-white"><i class="fab fa-github"></i></a>
-            </div>
+            <p>&copy; 2026 Advanced AI Network IDS</p>
         </div>
     </footer>
-
-    <!-- Upload Modal -->
-    <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Upload Traffic Data</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="fileUpload" class="form-label">Select file to upload:</label>
-                            <input type="file" class="form-control" id="fileUpload" accept=".pcap,.csv">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Upload</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

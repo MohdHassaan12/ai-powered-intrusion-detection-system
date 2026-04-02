@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropou
 from tensorflow.keras.optimizers import Adam
 
 # 1. Load the dataset you provided
-file_path = 'Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv'
+file_path = 'data/training/cic_dataset/Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv'
 df = pd.read_csv(file_path)
 df.columns = df.columns.str.strip()
 
@@ -48,6 +48,6 @@ model.compile(optimizer=Adam(), loss='categorical_crossentropy', metrics=['accur
 model.fit(X_train, y_train, epochs=2, batch_size=32, validation_split=0.1)
 
 # 5. Save Assets
-model.save('ids_model.h5')
-joblib.dump(scaler, 'scaler.pkl')
-joblib.dump(label_encoder, 'label_encoder.pkl')
+model.save('assets/models/ids_model.h5')
+joblib.dump(scaler, 'assets/models/scaler.pkl')
+joblib.dump(label_encoder, 'assets/models/label_encoder.pkl')

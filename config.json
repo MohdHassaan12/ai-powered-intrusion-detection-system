@@ -1,0 +1,6 @@
+{
+  "active_block": false,
+  "confidence_threshold": 95,
+  "webhook_url": "",
+  "sniff_interface": "en0"
+}
