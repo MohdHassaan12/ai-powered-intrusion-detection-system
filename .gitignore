@@ -6,3 +6,7 @@ __pycache__/
 *.log
 .venv/
 mac_venv/
+.env
+.env.*
+.DS_Store
+*.pcap

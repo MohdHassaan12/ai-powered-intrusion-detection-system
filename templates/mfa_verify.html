@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}MFA Verification - SOC{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center mfa-container">
+    <div class="glass-panel p-5 text-center mfa-panel">
+        <div class="mb-4">
+            <i class="fas fa-user-shield text-warning fa-3x mb-3"></i>
+            <h2 class="fw-bold text-white">Security Challenge</h2>
+            <p class="text-white-50">Enter the 6-digit code from your authenticator app to authorize this session.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} animate__animated animate__shakeX">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <div class="mb-4">
+                <input type="text" name="token" class="form-control form-control-lg bg-dark text-white border-secondary text-center mfa-token-input" 
+                       placeholder="000000" maxlength="6" autofocus required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+                <i class="fas fa-lock-open me-2"></i> VERIFY IDENTITY
+            </button>
+        </form>
+
+        <div class="mt-4">
+            <a href="{{ url_for('logout') }}" class="text-white-50 text-decoration-none small">
+                <i class="fas fa-arrow-left me-1"></i> Back to Login
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

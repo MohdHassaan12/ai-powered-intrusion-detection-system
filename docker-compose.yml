@@ -1,0 +1,28 @@
+# --- PRODUCTION DOCKER-COMPOSE: Advanced IDS SOC ORCHESTRATION ---
+version: '3.8'
+
+services:
+  advanced-ids:
+    build: .
+    container_name: advanced_ids_soc
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./instance:/app/instance
+      - ./logs:/app/logs
+      - ./static/reports:/app/static/reports
+      - ./assets:/app/assets
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env.production
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    network_mode: "host" # Essential for monitoring the host's physical interfaces
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge

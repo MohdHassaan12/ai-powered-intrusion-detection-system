@@ -1,55 +1,47 @@
 import os
 import subprocess
-import json
-
-CONFIG_FILE = 'config.json'
-BANNED_IPS_FILE = 'data/logs/banned_ips.txt'
-
-def load_settings():
-    if not os.path.exists(CONFIG_FILE):
-        return {}
-    with open(CONFIG_FILE, 'r') as f:
-        return json.load(f)
-
-def is_ip_banned(ip):
-    if not os.path.exists(BANNED_IPS_FILE):
-        return False
-    with open(BANNED_IPS_FILE, 'r') as f:
-        return ip in f.read()
+import platform
 
 def auto_ban_ip(source_ip):
     """
-    Checks if active block is enabled via config.
-    If so, records the IP and dynamically updates the macOS `pf` firewall.
+    Automated Defensive Response: Bans a malicious IP using system firewall utilities.
+    Checks for OS compatibility (Linux/iptables vs. Mac/Mock).
     """
-    config = load_settings()
+    if not source_ip or source_ip == "127.0.0.1":
+        return "Ignored (Local/Invalid IP)"
+
+    system_os = platform.system().lower()
     
-    # Check if admin turned on the IPS capability
-    if not config.get('active_block', False):
-        return False
-        
-    if is_ip_banned(source_ip):
-        return False # Already banned
-
-    print(f"[!] ACTIVE MITIGATION: Banning hostile IP {source_ip} via pfctl...")
-
-    # Log to flat file
-    with open(BANNED_IPS_FILE, 'a') as f:
-        f.write(source_ip + "\n")
-
-    # Only works if running as root!
-    if os.geteuid() == 0:
+    if system_os == "linux":
         try:
-            # We add a quick block rule to block all incoming from the hostile IP
-            rule = f"block drop in quick from {source_ip} to any\n"
+            # Check if running as root
+            if os.geteuid() != 0:
+                return "Permission Denied (Sudo required for IPS)"
             
-            # Appending to pf config involves reloading the ruleset. 
-            # In a true prod env, we map this to a specific anchor.
-            subprocess.run(f"echo '{rule}' | pfctl -a com.apple/ai_ids -f -", shell=True)
-            return True
+            # Using iptables to drop all traffic from the source IP
+            cmd = ["iptables", "-A", "INPUT", "-s", source_ip, "-j", "DROP"]
+            subprocess.run(cmd, check=True)
+            print(f"[!] IPS ACTION: Banned {source_ip} via iptables.")
+            return f"Banned {source_ip} (Linux/iptables)"
         except Exception as e:
-            print(f"[-] Auto-ban firewall error: {e}")
-            return False
+            return f"IPS Error: {e}"
+            
+    elif system_os == "darwin": # Mac
+        # Mac uses pfctl, but we'll mock it for safety unless explicitly asked
+        print(f"[*] IPS SIMULATION: Would ban {source_ip} on Mac (pfctl logic).")
+        return f"Simulated Ban: {source_ip}"
+    
     else:
-        print("[-] Cannot apply IP ban because application is NOT running natively as root (sudo).")
-        return False
+        return f"Unsupported OS: {system_os}"
+
+def unban_ip(source_ip):
+    """Removes a previously enforced IP ban."""
+    system_os = platform.system().lower()
+    if system_os == "linux":
+        try:
+            cmd = ["iptables", "-D", "INPUT", "-s", source_ip, "-j", "DROP"]
+            subprocess.run(cmd, check=True)
+            return f"Unbanned {source_ip}"
+        except:
+            return "Unban failed (IP not in list?)"
+    return f"Simulated Unban: {source_ip}"

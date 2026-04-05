@@ -1,6 +1,8 @@
 {
-  "active_block": false,
-  "confidence_threshold": 95,
-  "webhook_url": "",
-  "sniff_interface": "en0"
+    "active_block": false,
+    "confidence_threshold": 95,
+    "webhook_url": "",
+    "sniff_interface": "en0",
+    "gemini_api_key": "AIzaSyBLE7seRVjwTQLNvlfkTcwsGE4iCPjPVfY",
+    "abuseipdb_api_key": ""
 }

@@ -1,6 +1,7 @@
+
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=1000&color=00F7FF&center=true&vCenter=true&width=800&lines=AdvancedIDS+Enterprise+SOC+Platform;Neural+Network+Threat+Detection;Google+Gemini+AI+Forensics;Real-Time+Network+Interdiction" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=1000&color=00F7FF&center=true&vCenter=true&width=800&lines=AdvancedIDS+Autonomous+SOC+Platform;Neural+Predictive+Threat+Architecture;Phase+11:+Enterprise+Hardened+Packaging;Google+Gemini+Forensic+Orchestration" alt="Typing SVG" />
 
 <br/>
 
@@ -8,37 +9,35 @@
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.20-orange?style=for-the-badge&logo=tensorflow&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-black?style=for-the-badge&logo=flask&logoColor=white)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-Forensics-8E75B2?style=for-the-badge&logo=google-gemini&logoColor=white)
-![Design](https://img.shields.io/badge/UI/UX-Glassmorphism-FF69B4?style=for-the-badge)
+![Docker](https://img.shields.io/badge/Docker-Production-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 <br/>
 
-> **A professional-grade, real-time Security Operations Center (SOC) platform. This system utilizes a Convolutional Neural Network (CNN) for high-speed traffic classification, integrated with Google Gemini for automated neural forensics and a specialized Red Team simulation engine.**
+> **A state-of-the-art, autonomous Security Operations Center (SOC) platform. This system integrates real-time deep learning inference, predictive network topology, and AI-powered forensic reporting into a unified, glassmorphic command center.**
 
 </div>
 
 ---
 
-## 🏛️ Platform Architecture
+## 🏛️ Enterprise Architecture (Phases 1-11)
 
-AdvancedIDS is built on a modular four-tier architecture designed for operational speed and forensic accuracy.
+AdvancedIDS is a multi-layered security ecosystem designed for high-volume network environments.
 
-### 1. **Neural Detection Engine**
-A CNN-based inference layer that processes raw network flows captured via `cicflowmeter`. 
-- **Input Layers**: 78 numerical features reshaped into (6×13×1) spatial matrices.
-- **Confidence Thresholding**: Real-time severity tagging based on high-probability malicious patterns.
+### 1. **Neural Detection & Active Defense (Phases 1-4)**
+- **CNN Inference**: High-speed traffic classification using custom (6×13×1) spatial feature matrices.
+- **IPS Mode**: Automated system-level firewall interdiction (Active Blocking) for threats with >98% confidence.
+- **OSINT Fusion**: Real-time IP reputation scoring via **AbuseIPDB**, **VirusTotal**, and **AlienVault**.
 
-### 2. **AI Forensics & Intelligence**
-Integrated with **Google Gemini (LLM)** to provide "Neural Incident Reports".
-- Automated generation of 3-paragraph forensic summaries for any flagged threat.
-- Includes attack origin analysis, impact assessment, and specific mitigation protocols.
+### 2. **Intelligence & Forensics (Phases 5-8)**
+- **Gemini Orchestration**: Automated synthesis of professional 3-paragraph forensic narratives for every incident.
+- **Deception Nets (Honey-Net)**: Integrated tripwire system to trap and log lateral movement attempts from internal/external adversaries.
+- **Predictive Topology**: Real-time Source-to-Destination (S2D) communication mapping via **Cytoscape.js** to forecast attack propagation.
+- **Executive Reporting**: One-click generation of audit-ready **PDF forensic dossiers** using ReportLab.
 
-### 3. **Operational Control (Ops Control)**
-A dual-mode simulation and interdiction layer.
-- **Red Team Fire**: Manual trigger for Botnet, DDoS, and PortScan simulations.
-- **Operational Kill Switch**: Instant termination of all active simulations via the `/stop_simulation` backend.
-
-### 4. **Live Centre (Live Stream)**
-Server-Sent Events (SSE) driven dashboard providing 10ms latency updates of all network activity.
+### 3. **Observability & Health (Phases 9-11)**
+- **Real-time Alerting**: Professional Slack/Discord/Webhook notifications for high-severity incidents.
+- **System Health Monitor**: Live hardware telemetry (CPU, RAM, Bandwidth) of the SOC platform itself.
+- **Dockerized Hub**: Production-ready containerization with persistent forensic volumes and host-mode network sniffing.
 
 ---
 
@@ -46,69 +45,59 @@ Server-Sent Events (SSE) driven dashboard providing 10ms latency updates of all 
 
 | Layer | Technology | Role |
 |-------|------------|------|
-| **Core Engine** | Python 3.11, `psutil`, `scapy` | Logic & Network Hook |
-| **Parsing** | `cicflowmeter` | PCAP to Flow Feature Conversion |
-| **Model** | TensorFlow / Keras | CNN Traffic Classification |
-| **Forensics** | Google Gemini (1.5-Flash) | Automated Neural Reporting |
-| **Web UI** | Flask 3.1, Vanilla CSS | Glassmorphic SOC Dashboard |
-| **Database** | SQLite + SQLAlchemy | Hardened Persistence Layer |
+| **Core Engine** | Python 3.11, `scapy`, `psutil` | Logic, I/O & Metrics |
+| **Model** | TensorFlow / Keras (CNN) | Traffic Classification |
+| **Forensics** | Google Gemini (1.5-Flash) | Neural Narrative Synthesis |
+| **Visualization** | Cytoscape.js, Leaflet.js | Topology & Geo-Intel |
+| **Alerting** | Webhook JSON Payloads | Professional Slack/Discord Integration |
+| **Reporting** | ReportLab | Executive PDF Generation |
+| **Persistence** | SQLite + SQLAlchemy | Hardened Case Management |
 
 ---
 
-## 🚀 Deployment Guide
+## 🚀 Quick Deployment (Production Mode)
 
-> [!WARNING]
-> **Network Sniffing Requires Root Privileges**: Because the platform hooks into raw network interfaces for live capture, it **must** be executed with `sudo`.
+> [!IMPORTANT]
+> **Network Sniffing Requires Root**: For live monitoring, execution requires `sudo`.
 
-### Prerequisites
-- **Python 3.11+** installed in a virtual environment.
-- **Network Interface**: macOS (`en0`, `lo0`) or Linux (`eth0`, `wlan0`).
-
-### 1. Installation
+### Option A: Native Execution
 ```bash
 # Clone and enter directory
 git clone https://github.com/MohdHassaan12/ai-powered-intrusion-detection-system.git
 cd ai-powered-intrusion-detection-system
 
-# Prepare the environment
-python -m venv mac_venv
-source mac_venv/bin/activate
-pip install -r requirements.txt
+# Prepare and Execute
+sudo venv_mac/bin/python3 app.py
 ```
 
-### 2. Running the Platform
+### Option B: Docker Orchestration (Phase 11)
 ```bash
-# Execute with root privileges
-sudo ./.venv/mac_venv/bin/python app.py
+# Launch with persistent volumes and host network access
+docker-compose up -d
 ```
 
-### 3. Accessing the Dashboard
-Open your secure portal at: **[http://127.0.0.1:5001](http://127.0.0.1:5001)**
+---
+
+## ⚙️ SOC Access Credentials
+
+Open: **[http://127.0.0.1:5001](http://127.0.0.1:5001)**
 - **User**: `er.tushar07@gmail.com`
 - **PIN**: `889763`
 
 ---
 
-## ⚙️ Configuration Management
+## 🔮 Strategic Feature Matrix
 
-The platform handles its state via `config.json` (auto-generated in the root directory). You can modify these settings directly in the **Settings** tab.
-
-- `sniff_interface`: The hardware interface to monitor (e.g., `en0`).
-- `gemini_api_key`: Required for generating AI Forensic Reports.
-- `confidence_threshold`: Probability % required to trigger a "High" severity alert.
-
----
-
-## 🔮 Roadmap
-- [ ] **Phase 4**: Migration to `google.genai` SDK from deprecated package.
-- [ ] **Phase 5**: Integration of AlienVault OTX / VirusTotal OSINT feeds.
-- [ ] **Phase 6**: Automated IP Blacklisting (IPS mode) via OS-level firewall hooks.
+- [x] **Phase 1-4**: AI Detection, Active IPS, OSINT feeds.
+- [x] **Phase 5-7**: Gemini Forensics, Honey-Net, Network Topology.
+- [x] **Phase 8-10**: PDF Reporting, Webhook Alerts, System Health.
+- [x] **Phase 11**: Production Containerization & Hardened Documentation.
 
 ---
 
 <div align="center">
 
-**Enterprise SOC Platform | Optimized for Precision Security**
+**Enterprise SOC Platform | Autonomous Multi-Layer Security**
 Made with 🛡️ and 🧠 by [Mohd Hassaan](https://github.com/MohdHassaan12)
 
 </div>
