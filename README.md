@@ -1,7 +1,7 @@
 
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=1000&color=00F7FF&center=true&vCenter=true&width=800&lines=AdvancedIDS+Autonomous+SOC+Platform;Neural+Predictive+Threat+Architecture;Phase+11:+Enterprise+Hardened+Packaging;Google+Gemini+Forensic+Orchestration" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=1000&color=00F7FF&center=true&vCenter=true&width=800&lines=AdvancedIDS+Autonomous+SOC+Platform;Neural+Predictive+Threat+Architecture;Phase+12:+Command+Center+XR+and+Cloud+PaaS;Google+Gemini+Forensic+Orchestration" alt="Typing SVG" />
 
 <br/>
 
@@ -48,7 +48,7 @@ AdvancedIDS is a multi-layered security ecosystem designed for high-volume netwo
 | **Core Engine** | Python 3.11, `scapy`, `psutil` | Logic, I/O & Metrics |
 | **Model** | TensorFlow / Keras (CNN) | Traffic Classification |
 | **Forensics** | Google Gemini (1.5-Flash) | Neural Narrative Synthesis |
-| **Visualization** | Cytoscape.js, Leaflet.js | Topology & Geo-Intel |
+| **Visualization** | Cytoscape.js, Leaflet.js | Command Center XR, Topology & Geo-Intel |
 | **Alerting** | Webhook JSON Payloads | Professional Slack/Discord Integration |
 | **Reporting** | ReportLab | Executive PDF Generation |
 | **Persistence** | SQLite + SQLAlchemy | Hardened Case Management |
@@ -76,6 +76,18 @@ sudo venv_mac/bin/python3 app.py
 docker-compose up -d
 ```
 
+### Option C: Cloud PaaS / Restricted Boundary (Phase 12)
+The platform can be deployed to restricted PaaS boundaries (e.g., **Render.com**), running headlessly via Gunicorn:
+```bash
+gunicorn app:app
+```
+
+### Option D: Ngrok Public Tunnel (For Live Showcase)
+To expose the live packet sniffer engine securely for a portfolio showcase:
+```bash
+ngrok http 5001
+```
+
 ---
 
 ## ⚙️ SOC Access Credentials
@@ -92,6 +104,7 @@ Open: **[http://127.0.0.1:5001](http://127.0.0.1:5001)**
 - [x] **Phase 5-7**: Gemini Forensics, Honey-Net, Network Topology.
 - [x] **Phase 8-10**: PDF Reporting, Webhook Alerts, System Health.
 - [x] **Phase 11**: Production Containerization & Hardened Documentation.
+- [x] **Phase 12**: Command Center XR UI, Cloud PaaS Support (Render), & Ngrok Tunneling.
 
 ---
 
