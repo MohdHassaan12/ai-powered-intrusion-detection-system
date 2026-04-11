@@ -1348,8 +1348,8 @@ def clear_logs():
 
 if __name__ == '__main__':
     # 🚀 Phase 6: Activate Deception Layer (Honey-Net)
-    # This spawns decoy port listeners (22, 23, 3306, 8080) for advanced threat trapping.
-    deception.start_deception_layer(app, db, DeceptionLog, FirewallRule, Settings)
+    # This spawns decoy port listeners (22, 23, 3306, 8888) for advanced threat trapping.
+    deception.start_deception_layer(app, db, DeceptionLog, FirewallRule, Settings, ports=[22, 23, 3306, 8888])
     
     # Standardizing on 5001 for the hardened platform
     app.run(host='0.0.0.0', port=5001, debug=False)
