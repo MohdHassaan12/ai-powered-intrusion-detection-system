@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs - SOC</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="static/images/logo.svg">
+    
+
+
+    <link rel="stylesheet" href="static/css/style.css?v=2.0">
+    <!-- Load Chart JS Globally -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.addEventListener('DOMContentLoaded', () => {
+                const icon = document.querySelector('#theme-toggle i');
+                if (savedTheme === 'dark') {
+                    icon.className = 'fas fa-moon';
+                } else {
+                    icon.className = 'fas fa-sun';
+                }
+            });
+        })();
+    </script>
+</head>
+
+<body>
+    <!-- Glassmorphic Top Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top glass-navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="./index.html">
+                <img src="static/images/logo.svg" alt="AdvancedIDS Logo" class="brand-logo">
+                <span class="text-primary fw-bold ms-2">AdvancedIDS</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index.html"><i class="fas fa-th-large"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./monitoring.html"><i class="fas fa-broadcast-tower"></i> Live
+                            SOC</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./analyze"><i class="fas fa-upload"></i> PCAP
+                            Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./logs.html"><i class="fas fa-database"></i> Threat Logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./reports.html"><i class="fas fa-file-invoice"></i> Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <button id="theme-toggle" class="btn btn-outline-primary btn-sm rounded-circle shadow-sm"
+                            title="Toggle Light/Dark Mode">
+                            <i class="fas fa-sun"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a href="./login.html" class="btn btn-danger btn-sm" title="Logout System Session"><i
+                                class="fas fa-sign-out-alt"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper (Compensating for Fixed Top Navbar) -->
+    <div class="main-content container-fluid pt-5 mt-5">
+        
+          
+        
+        
+    
+
+    <div class="container">
+        <div class="hero text-center mt-3">
+            <h1 class="fw-bold text-white"><i class="fas fa-database text-warning"></i> Historical Threat Logs</h1>
+            <p class="hero-subtitle">Vaulted high-confidence threats detected over time</p>
+        </div>
+
+        <div class="glass-panel p-3 mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-9">
+                    <form method="GET" action="/logs" class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" name="search_ip" class="form-control" placeholder="Search by Source IP..." value="">
+                        </div>
+                        <div class="col-md-4">
+                            <select name="attack_type" class="form-select">
+                                <option value="">All Attack Types</option>
+                                
+                                <option value="DDoS" >DDoS</option>
+                                
+                                <option value="Botnet" >Botnet</option>
+                                
+                                <option value="PortScan" >PortScan</option>
+                                
+                                <option value="DoS Hulk" >DoS Hulk</option>
+                                
+                                <option value="FTP-Patator" >FTP-Patator</option>
+                                
+                                <option value="Bot" >Bot</option>
+                                
+                                <option value="Web Attack" >Web Attack</option>
+                                
+                                <option value="DDOS" >DDOS</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-custom w-100"><i class="fas fa-search"></i> Filter</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-3 d-flex gap-2 justify-content-end align-items-center">
+                    <a href="./export/csv?search_ip=&amp;attack_type=" class="btn btn-outline-custom" title="Export Current Result Set"><i class="fas fa-file-csv"></i> Export</a>
+                    <form action="/logs/clear" method="POST" onsubmit="return confirm('CRITICAL: This will permanently redact all vaulted threat records. Proceed?');" class="m-0">
+                        <button type="submit" class="btn btn-outline-danger" title="Purge All Records"><i class="fas fa-trash-alt"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 table-container mb-5">
+            
+            <div class="table-responsive">
+                <table class="table table-hover table-borderless align-middle" id="logs-table">
+                    <thead class="table-light-header">
+                        <tr>
+                            <th style="width: 15%;">Incident Timestamp</th>
+                            <th>Source IP</th>
+                            <th>Historical</th>
+                            <th>AI Diag</th>
+                            <th>Raw Conf</th>
+                            <th class="text-center">Forensic Conf</th>
+                            <th class="text-center">Global Risk</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261824')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261824')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261824', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261824', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261823')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261823')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261823', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261823', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">Packet Length Variance (High), Bwd Packet Length Std (High), Packet Length Std (High)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261822')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261822')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261822', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261822', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261821')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261821')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261821', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261821', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">Packet Length Variance (High), Bwd Packet Length Std (High), Packet Length Std (High)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261820')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261820')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261820', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261820', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261819')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261819')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261819', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261819', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">Packet Length Variance (High), Bwd Packet Length Std (High), Packet Length Std (High)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261818')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261818')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261818', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261818', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261817')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261817')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261817', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261817', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">Packet Length Variance (High), Bwd Packet Length Std (High), Packet Length Std (High)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261816')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261816')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261816', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261816', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261815')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261815')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261815', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261815', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">Packet Length Variance (High), Bwd Packet Length Std (High), Packet Length Std (High)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261814')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261814')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261814', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261814', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261813')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261813')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261813', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261813', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">Packet Length Variance (High), Bwd Packet Length Std (High), Packet Length Std (High)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261812')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261812')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261812', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261812', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261811')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261811')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261811', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261811', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">Packet Length Variance (High), Bwd Packet Length Std (High), Packet Length Std (High)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <tr class="log-row">
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                2026-04-07 17:07:01
+                            </td>
+                            <td><span class="text-primary fw-bold">N/A</span></td>
+                            <td><span class="badge border border-info text-info">DDOS</span></td>
+                            <td><span class="badge border border-warning text-warning">BENIGN</span></td>
+                            <td class="text-faded text-xs">100.0000%</td>
+                            <td class="text-danger fw-bold">DDOS</td>
+                            <td class="text-center">
+                                <span class="fw-bold text-threat-high">99.9100%</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">0% OSINT</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <button class="btn btn-sm btn-outline-info" onclick="analyzeThreat('261810')" title="✨ AI Forensics Report">
+                                        <i class="fas fa-wand-magic-sparkles"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateExecutiveReport('261810')" title="📄 Generate Executive Forensic Report (PDF)">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="submitFeedback('261810', 'CONFIRMED')" title="Confirm Identity">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback('261810', 'FALSE_POSITIVE')" title="Flag False Positive">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="vr mx-1"></div>
+                                    
+                                    <button class="btn btn-sm btn-outline-danger" onclick="blockIP('N/A', 'Manual ban from threat logs')" title="🛡️ Active Defense: Block and Nullify Route">
+                                        <i class="fas fa-shield-halved"></i>
+                                    </button>
+                                    
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="detail-row">
+                            <td colspan="8" class="p-0">
+                                <div class="px-4 py-2 bg-dark-soft border-top border-bottom border-secondary-subtle" style="font-size: 0.85rem;">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-7 border-end border-secondary-subtle">
+                                            <div class="text-info fw-bold mb-1"><i class="fas fa-microscope me-1"></i> Forensic Reasoning:</div>
+                                            <div class="text-muted">Forensic Override: Historical DDOS label enforced via Multi-Model Consensus.</div>
+                                        </div>
+                                        <div class="col-md-5 ps-4">
+                                            <div class="text-warning fw-bold mb-1"><i class="fas fa-fingerprint me-1"></i> Top Indicators:</div>
+                                            <div class="text-faded text-xs italic">ACK Flag Count (High), Down/Up Ratio (Low), min_seg_size_forward (Low)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+            
+            
+            
+            
+            
+        </div>
+    </div>
+
+    <!-- AI Forensics Modal -->
+    <div class="modal fade" id="forensicsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content table-container">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fas fa-brain me-2"></i> AI Forensic Incident Report</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="ai-report-content" class="text-muted forensic-report">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-3">Consulting Neural Forensics Layer...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close Investigation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    </div>
+
+    <!-- PHASE 2: GENAI SOC ANALYST FLOATING HUB -->
+    <div id="ai-chat-hub" class="ai-chat-hidden shadow-lg">
+        <div class="ai-chat-header d-flex justify-content-between align-items-center p-3">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-brain me-2 text-warning"></i> SOC AI Analyst</h6>
+            <button type="button" class="btn-close btn-close-white" onclick="toggleChat()" title="Close AI Interface"></button>
+        </div>
+        <div id="ai-chat-messages" class="ai-chat-body p-3">
+            <div class="ai-msg-box bot">
+                <div class="msg-content">Neural Insight Node active. How can I assist with your forensic investigation?</div>
+            </div>
+        </div>
+        <div class="ai-chat-footer p-2 border-top border-secondary">
+            <div class="input-group">
+                <input type="text" id="ai-chat-input" class="form-control" placeholder="Ask AI Analyst (e.g. 'Show me DDoS attempts from today')..." onkeydown="if(event.key==='Enter') sendAIChat()">
+                <button class="btn btn-primary" onclick="sendAIChat()"><i class="fas fa-location-arrow"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <button id="ai-chat-trigger" class="btn btn-primary rounded-circle shadow-pulse" onclick="toggleChat()" title="Deploy conversational AI Analyst">
+        <i class="fas fa-comment-dots fa-lg"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', function () {
+            let current = document.documentElement.getAttribute('data-theme');
+            let next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            
+            const icon = this.querySelector('i');
+            if (next === 'dark') {
+                icon.className = 'fas fa-moon';
+            } else {
+                icon.className = 'fas fa-sun';
+            }
+        });
+
+        // --- PHASE 2: GENAI CHAT LOGIC ---
+        function toggleChat() {
+            const chatHub = document.getElementById('ai-chat-hub');
+            chatHub.classList.toggle('active');
+        }
+
+        async function sendAIChat() {
+            const input = document.getElementById('ai-chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const chatBody = document.getElementById('ai-chat-messages');
+            
+            // Append User Message
+            const userBox = document.createElement('div');
+            userBox.className = 'ai-msg-box user mb-3';
+            userBox.innerHTML = `<div class="msg-content">${msg}</div>`;
+            chatBody.appendChild(userBox);
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Append Loading Indicator
+            const loadingBox = document.createElement('div');
+            loadingBox.className = 'ai-msg-box bot mb-3';
+            loadingBox.innerHTML = `<div class="msg-content"><i class="fas fa-dna fa-spin me-2"></i> Analyzing SOC Telemetry...</div>`;
+            chatBody.appendChild(loadingBox);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await response.json();
+                
+                // Replace Loading indicator with real response
+                let html = data.response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                loadingBox.querySelector('.msg-content').innerHTML = html;
+            } catch (error) {
+                loadingBox.querySelector('.msg-content').innerHTML = `Forensic Interface Exception: ${error.message}`;
+            }
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+    
+    <script>
+        // AI Forensics Logic
+        const forensicModal = new bootstrap.Modal(document.getElementById('forensicsModal'));
+        async function analyzeThreat(logId) {
+            document.getElementById('ai-report-content').innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Consulting Neural Forensics Layer...</p>
+                </div>`;
+            forensicModal.show();
+            
+            try {
+                const response = await fetch(`/api/forensics/${logId}`);
+                const data = await response.json();
+                let html = data.report.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                document.getElementById('ai-report-content').innerHTML = html;
+            } catch (error) {
+                document.getElementById('ai-report-content').innerHTML = `<div class="alert alert-danger">Forensic link failed: ${error.message}</div>`;
+            }
+        }
+
+        async function generateExecutiveReport(logId) {
+            const row = event.currentTarget.closest('.d-flex');
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/forensics/executive_report/${logId}`);
+                const data = await response.json();
+                if (data.report_url) {
+                    window.open(data.report_url, '_blank');
+                    alert(data.status);
+                } else {
+                    alert(data.error || "Report synthesis failed.");
+                }
+            } catch (error) {
+                alert(`Case Management Link Failure: ${error.message}`);
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+
+        async function submitFeedback(logId, decision) {
+            try {
+                const response = await fetch(`/api/feedback/${logId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ decision: decision, notes: "Audited via SOC Grid." })
+                });
+                const data = await response.json();
+                alert(data.status || data.error);
+                location.reload(); 
+            } catch (error) {
+                alert(`Feedback capture failed: ${error.message}`);
+            }
+        }
+
+        // --- PHASE 1: ACTIVE DEFENSE AJAX ---
+        async function blockIP(ip, reason) {
+            if (!confirm(`CRITICAL: Block IP ${ip}? This will enforce a system-level firewall drop.`)) return;
+            
+            try {
+                const response = await fetch('/api/firewall/block', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip: ip, reason: reason })
+                });
+                const data = await response.json();
+                alert(data.status);
+                location.reload();
+            } catch (error) {
+                alert(`IPS Execution failure: ${error.message}`);
+            }
+        }
+
+        async function unblockIP(ip) {
+            if (!confirm(`Release active ban for IP ${ip}?`)) return;
+            
+            try {
+                const response = await fetch('/api/firewall/unblock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip: ip })
+                });
+                const data = await response.json();
+                alert(data.status);
+                location.reload();
+            } catch (error) {
+                alert(`IPS Unblock failure: ${error.message}`);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

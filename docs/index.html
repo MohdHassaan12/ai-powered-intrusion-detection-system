@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - SOC</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="static/images/logo.svg">
+    
+
+
+    <link rel="stylesheet" href="static/css/style.css?v=2.0">
+    <!-- Load Chart JS Globally -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.addEventListener('DOMContentLoaded', () => {
+                const icon = document.querySelector('#theme-toggle i');
+                if (savedTheme === 'dark') {
+                    icon.className = 'fas fa-moon';
+                } else {
+                    icon.className = 'fas fa-sun';
+                }
+            });
+        })();
+    </script>
+</head>
+
+<body>
+    <!-- Glassmorphic Top Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top glass-navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="./index.html">
+                <img src="static/images/logo.svg" alt="AdvancedIDS Logo" class="brand-logo">
+                <span class="text-primary fw-bold ms-2">AdvancedIDS</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index.html"><i class="fas fa-th-large"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./monitoring.html"><i class="fas fa-broadcast-tower"></i> Live
+                            SOC</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./analyze"><i class="fas fa-upload"></i> PCAP
+                            Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./logs.html"><i class="fas fa-database"></i> Threat Logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./reports.html"><i class="fas fa-file-invoice"></i> Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <button id="theme-toggle" class="btn btn-outline-primary btn-sm rounded-circle shadow-sm"
+                            title="Toggle Light/Dark Mode">
+                            <i class="fas fa-sun"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a href="./login.html" class="btn btn-danger btn-sm" title="Logout System Session"><i
+                                class="fas fa-sign-out-alt"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper (Compensating for Fixed Top Navbar) -->
+    <div class="main-content container-fluid pt-5 mt-5">
+        
+          
+        
+        
+
+    
+
+    <header class="hero text-center mt-3">
+        <div class="container">
+            <h1 class="display-4">Zero-Day Network Threat Detection</h1>
+            <p class="lead" style="color: #f0f0f0;">Protect your infrastructure with AI-based deep learning traffic inference</p>
+            
+            <div class="row mt-5 justify-content-center">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h3>261824</h3>
+                        <p class="m-0" style="color: #f8f9fa;">Total Logged Threats</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h3>95.0%</h3>
+                        <p class="m-0" style="color: #f8f9fa;">Alert Confidence Threshold</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <h3 class="text-truncate px-2">DDOS</h3>
+                        <p class="m-0" style="color: #f8f9fa;">Recent Threat Type</p>
+                    </div>
+                </div>
+            </div>
+
+            <a href="./monitoring.html" class="btn btn-lg btn-custom mt-5">Launch Command Center XR <i class="fas fa-rocket ms-2"></i></a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="features" class="py-5">
+            <h2 class="text-center mb-5 section-title">System Capabilities</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <a href="./analyze" class="text-decoration-none feature-link" title="Analyze Batch PCAP/CSV Files">
+                            <div class="card-body text-center">
+                                <i class="fas fa-upload feature-icon"></i>
+                                <h5 class="card-title fw-bold">Batch PCAP/CSV Analysis</h5>
+                                <p class="card-text text-muted">Upload historical CIC-IDS format logs to get instant AI-based classification and generated PDF/CSV reports.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <a href="./monitoring.html" class="text-decoration-none feature-link" title="Monitor Real-Time Network Traffic">
+                            <div class="card-body text-center">
+                                <i class="fas fa-satellite-dish feature-icon"></i>
+                                <h5 class="card-title fw-bold">Real-Time Packets</h5>
+                                <p class="card-text text-muted">Watch true live streaming traffic with deep-learning predictions displayed in a dynamic chart interface.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card feature-card h-100">
+                        <a href="./logs.html" class="text-decoration-none feature-link" title="View Historical Threat Logs">
+                            <div class="card-body text-center">
+                                <i class="fas fa-database feature-icon"></i>
+                                <h5 class="card-title fw-bold">Historical Threat Logs</h5>
+                                <p class="card-text text-muted">All high-confidence malicious packets are securely vaulted to an internal SQLite database for auditing.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="attacks" class="py-5">
+            <h2 class="text-center mb-4 section-title">Threat Taxonomy</h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card feature-card h-100">
+                        <a href="./logs?attack_type=DoS" class="text-decoration-none feature-link" title="Investigate DoS/DDoS Incidents">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-server text-danger"></i> DoS / DDoS Operations</h5>
+                                <p class="card-text text-muted">Detect structural anomalies associated with DoS Hulk, Slowloris, and massive volumetric flooding.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card feature-card h-100">
+                        <a href="./logs?attack_type=PortScan" class="text-decoration-none feature-link" title="Audit PortScan Reconnaissance">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-search text-warning"></i> PortScanning Recon</h5>
+                                <p class="card-text text-muted">Identify aggressive or stealth TCP/UDP port scans mapping internal network topologies.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card feature-card h-100">
+                        <a href="./logs?attack_type=Patator" class="text-decoration-none feature-link" title="Review Brute Force Attempts">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-key text-info"></i> Brute Force Attacks</h5>
+                                <p class="card-text text-muted">Identify FTP-Patator, SSH-Patator, and web-based credential stuffing based on timing signatures.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card feature-card h-100">
+                        <a href="./logs?attack_type=Bot" class="text-decoration-none feature-link" title="Explore Botnet C&C Logs">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-robot text-success"></i> Botnet C&C</h5>
+                                <p class="card-text text-muted">Capture heartbeat communications and automated malware coordination traffic.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+
+    
+
+
+    </div>
+
+    <!-- PHASE 2: GENAI SOC ANALYST FLOATING HUB -->
+    <div id="ai-chat-hub" class="ai-chat-hidden shadow-lg">
+        <div class="ai-chat-header d-flex justify-content-between align-items-center p-3">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-brain me-2 text-warning"></i> SOC AI Analyst</h6>
+            <button type="button" class="btn-close btn-close-white" onclick="toggleChat()" title="Close AI Interface"></button>
+        </div>
+        <div id="ai-chat-messages" class="ai-chat-body p-3">
+            <div class="ai-msg-box bot">
+                <div class="msg-content">Neural Insight Node active. How can I assist with your forensic investigation?</div>
+            </div>
+        </div>
+        <div class="ai-chat-footer p-2 border-top border-secondary">
+            <div class="input-group">
+                <input type="text" id="ai-chat-input" class="form-control" placeholder="Ask AI Analyst (e.g. 'Show me DDoS attempts from today')..." onkeydown="if(event.key==='Enter') sendAIChat()">
+                <button class="btn btn-primary" onclick="sendAIChat()"><i class="fas fa-location-arrow"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <button id="ai-chat-trigger" class="btn btn-primary rounded-circle shadow-pulse" onclick="toggleChat()" title="Deploy conversational AI Analyst">
+        <i class="fas fa-comment-dots fa-lg"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', function () {
+            let current = document.documentElement.getAttribute('data-theme');
+            let next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            
+            const icon = this.querySelector('i');
+            if (next === 'dark') {
+                icon.className = 'fas fa-moon';
+            } else {
+                icon.className = 'fas fa-sun';
+            }
+        });
+
+        // --- PHASE 2: GENAI CHAT LOGIC ---
+        function toggleChat() {
+            const chatHub = document.getElementById('ai-chat-hub');
+            chatHub.classList.toggle('active');
+        }
+
+        async function sendAIChat() {
+            const input = document.getElementById('ai-chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const chatBody = document.getElementById('ai-chat-messages');
+            
+            // Append User Message
+            const userBox = document.createElement('div');
+            userBox.className = 'ai-msg-box user mb-3';
+            userBox.innerHTML = `<div class="msg-content">${msg}</div>`;
+            chatBody.appendChild(userBox);
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Append Loading Indicator
+            const loadingBox = document.createElement('div');
+            loadingBox.className = 'ai-msg-box bot mb-3';
+            loadingBox.innerHTML = `<div class="msg-content"><i class="fas fa-dna fa-spin me-2"></i> Analyzing SOC Telemetry...</div>`;
+            chatBody.appendChild(loadingBox);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await response.json();
+                
+                // Replace Loading indicator with real response
+                let html = data.response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                loadingBox.querySelector('.msg-content').innerHTML = html;
+            } catch (error) {
+                loadingBox.querySelector('.msg-content').innerHTML = `Forensic Interface Exception: ${error.message}`;
+            }
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+    
+
+
+</body>
+
+</html>

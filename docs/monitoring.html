@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring - SOC</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="static/images/logo.svg">
+    
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+
+    <link rel="stylesheet" href="static/css/style.css?v=2.0">
+    <!-- Load Chart JS Globally -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.addEventListener('DOMContentLoaded', () => {
+                const icon = document.querySelector('#theme-toggle i');
+                if (savedTheme === 'dark') {
+                    icon.className = 'fas fa-moon';
+                } else {
+                    icon.className = 'fas fa-sun';
+                }
+            });
+        })();
+    </script>
+</head>
+
+<body>
+    <!-- Glassmorphic Top Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top glass-navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="./index.html">
+                <img src="static/images/logo.svg" alt="AdvancedIDS Logo" class="brand-logo">
+                <span class="text-primary fw-bold ms-2">AdvancedIDS</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="./index.html"><i class="fas fa-th-large"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./monitoring.html"><i class="fas fa-broadcast-tower"></i> Live
+                            SOC</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./analyze"><i class="fas fa-upload"></i> PCAP
+                            Analysis</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./logs.html"><i class="fas fa-database"></i> Threat Logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./reports.html"><i class="fas fa-file-invoice"></i> Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="./settings.html"><i class="fas fa-cog"></i> Settings</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <button id="theme-toggle" class="btn btn-outline-primary btn-sm rounded-circle shadow-sm"
+                            title="Toggle Light/Dark Mode">
+                            <i class="fas fa-sun"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a href="./login.html" class="btn btn-danger btn-sm" title="Logout System Session"><i
+                                class="fas fa-sign-out-alt"></i></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper (Compensating for Fixed Top Navbar) -->
+    <div class="main-content container-fluid pt-5 mt-5">
+        
+          
+        
+        
+    
+
+    <div class="container-fluid px-5">
+        <div class="hero text-center mt-3 position-relative">
+            <h1 class="fw-bold"><i class="fas fa-satellite-dish blink_text text-warning"></i> Command Center XR</h1>
+            <p class="hero-subtitle">Global tracking & real-time deep learning inference</p>
+            <span id="capture-mode-badge" class="badge rounded-pill bg-light text-dark mt-2 badge-small">Connecting to Sniffer...</span>
+            <div class="d-flex flex-wrap justify-content-center align-items-center gap-3 mt-3">
+                <button id="start-sniff-btn" class="btn btn-primary" onclick="restartSniffing()" title="Start/Restart Native PCAP Sniffer Engine"><i class="fas fa-satellite-dish"></i> START LIVE SNIFFING</button>
+                <button id="stop-sniff-btn" class="btn btn-outline-warning d-none" onclick="stopSniffing()" title="Stop Native PCAP Sniffer Engine"><i class="fas fa-stop"></i> STOP SNIFFING</button>
+                <div class="vr mx-2 bg-white-50" style="width: 1px; opacity: 0.3;"></div>
+                <button class="btn btn-intel-pulse" onclick="getStrategicBrief()" title="Consult Strategic AI Analyst"><i class="fas fa-brain"></i> STRATEGIC AI BRIEF</button>
+                <button class="btn btn-danger-pulse" onclick="triggerSimulatedAttack()" title="Launch Red Team Attack Simulation"><i class="fas fa-biohazard"></i> FIRE RED TEAM SIMULATOR</button>
+                <button id="stop-sim-btn" class="btn btn-outline-warning d-none" onclick="stopSimulatedAttack()" title="Terminate Active Simulation"><i class="fas fa-stop-circle"></i> STOP SIMULATION</button>
+                
+                <div class="vr mx-2 bg-white-50" style="width: 1px; opacity: 0.3;"></div>
+                <div class="auto-pilot-pill d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-lg border border-white-50 transition-all cursor-pointer" onclick="document.getElementById('autoPilotToggle').click()">
+                    <div class="form-check form-switch m-0 p-0 d-flex align-items-center">
+                        <input class="form-check-input m-0 cursor-pointer" type="checkbox" id="autoPilotToggle" onchange="toggleAutoPilot(this.checked)" style="width: 2.5em; height: 1.25em;">
+                    </div>
+                    <span class="text-xs fw-bold text-white mb-0" style="font-size: 0.75rem; letter-spacing: 1px;">
+                        <i class="fas fa-robot me-1 text-info animate-pulse"></i> AUTO-PILOT
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4 mt-4">
+            <div class="col-md-3">
+                <div class="stat-box text-center glass-card border-glow-blue border-top-3">
+                    <h5 class="fw-bold mb-3 theme-text-contrast" style="letter-spacing: 1px; font-size: 0.85rem;">
+                        <i class="fas fa-heartbeat text-primary animate-pulse me-2"></i> SOC BIOS HEALTH
+                    </h5>
+                    <div class="d-flex justify-content-center gap-3 mb-3">
+                        <div class="health-metric-box flex-grow-1 p-2 rounded bg-dark border border-secondary shadow-sm">
+                            <span class="theme-text-contrast d-block mb-1" style="font-size: 0.6rem; font-weight: 700; opacity: 0.7;">CPU LOAD</span>
+                            <span id="health-cpu" class="text-cyan-glow fw-bold fs-5">--%</span>
+                        </div>
+                        <div class="health-metric-box flex-grow-1 p-2 rounded bg-dark border border-secondary shadow-sm">
+                            <span class="theme-text-contrast d-block mb-1" style="font-size: 0.6rem; font-weight: 700; opacity: 0.7;">MEMORY</span>
+                            <span id="health-mem" class="text-warning-glow fw-bold fs-5">--%</span>
+                        </div>
+                    </div>
+                    <div id="health-status" class="status-indicator-v2 badge bg-dark text-cyan-glow border border-info border-opacity-50 w-100 py-2">
+                        <i class="fas fa-circle-notch fa-spin me-2"></i> SNIFFER: OPERATIONAL
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box text-center glass-card border-glow-cyan border-top-3">
+                    <h5 class="theme-text-contrast small fw-bold mb-3">TOTAL FLOWS</h5>
+                    <h2 id="total-packets" class="fw-bold" style="color: #00F7FF; text-shadow: 0 0 10px rgba(0, 247, 255, 0.3);">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box text-center glass-card border-glow-green border-top-3">
+                    <h5 class="theme-text-contrast small fw-bold mb-3">SAFE (BENIGN)</h5>
+                    <h2 id="benign-count" class="text-success fw-bold">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-box text-center glass-card border-glow-red border-top-3">
+                    <h5 class="theme-text-contrast small fw-bold mb-3">THREATS DETECTED</h5>
+                    <h2 id="threat-count" class="text-danger fw-bold" style="text-shadow: 0 0 10px rgba(220, 53, 69, 0.3);">0</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5 class="theme-text-contrast mb-2"><i class="fas fa-chart-line"></i> Traffic Volume</h5>
+                <div class="panel-container shadow p-3" style="height: 250px;">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5 class="theme-text-contrast mb-2"><i class="fas fa-chart-pie"></i> Threat Distribution</h5>
+                <div class="panel-container shadow p-3" style="height: 250px; display: flex; align-items: center; justify-content: center;">
+                    <canvas id="threatPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Multi-Intelligence Command Hub -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <ul class="nav nav-pills gap-2 mb-3" id="socTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active bg-dark text-white border-0 rounded p-2 px-3" id="map-tab" data-bs-toggle="tab" data-bs-target="#map-view" type="button" role="tab" aria-controls="map-view" aria-selected="true"><i class="fas fa-globe"></i> Geo-Intel</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link bg-dark text-white border-0 rounded p-2 px-3" id="topology-tab" data-bs-toggle="tab" data-bs-target="#topology-view" type="button" role="tab" aria-controls="topology-view" aria-selected="false"><i class="fas fa-network-wired"></i> Topology Map</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link bg-dark text-white border-0 rounded p-2 px-3" id="deception-tab" data-bs-toggle="tab" data-bs-target="#deception-view" type="button" role="tab" aria-controls="deception-view" aria-selected="false"><i class="fas fa-spider"></i> Honey-Net</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="socTabsContent">
+                    <div class="tab-pane fade show active" id="map-view" role="tabpanel">
+                        <div class="panel-container shadow p-1" style="height: 450px;">
+                            <div id="threat-map" style="height: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="topology-view" role="tabpanel">
+                        <div class="panel-container shadow position-relative" style="height: 450px; background: #0b0f19; overflow: hidden; border-radius: 10px;">
+                            <div id="cy" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                            <div class="position-absolute top-0 end-0 p-2 text-white-50" style="font-size: 0.7rem; pointer-events: none; z-index: 10;">
+                                <i class="fas fa-info-circle"></i> Zoom/Drag to explore network edges
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="deception-view" role="tabpanel">
+                        <div class="panel-container shadow p-3 overflow-auto" style="height: 450px;">
+                            <div id="deception-hits" class="small">
+                                <p class="text-muted text-center py-5">Luring adversaries into the decoys...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 rounded shadow table-container mb-5">
+            <table class="table table-hover table-borderless" id="live-table">
+                <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Flow ID</th>
+                        <th>Source IP</th>
+                        <th>Classification</th>
+                        <th>Confidence</th>
+                        <th>Global Risk</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="live-table-body">
+                    <!-- Data appended here by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Strategic Intel Modal -->
+    <div class="modal fade" id="intelModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content table-container">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fas fa-globe-africa me-2"></i> Strategic Intelligence Briefing</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="intel-brief-content" class="p-3" style="line-height: 1.8; color: var(--text-color) !important;">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-3">Synthesizing threat narratives via Gemini...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Acknowledge Intelligence</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    </div>
+
+    <!-- PHASE 2: GENAI SOC ANALYST FLOATING HUB -->
+    <div id="ai-chat-hub" class="ai-chat-hidden shadow-lg">
+        <div class="ai-chat-header d-flex justify-content-between align-items-center p-3">
+            <h6 class="mb-0 fw-bold"><i class="fas fa-brain me-2 text-warning"></i> SOC AI Analyst</h6>
+            <button type="button" class="btn-close btn-close-white" onclick="toggleChat()" title="Close AI Interface"></button>
+        </div>
+        <div id="ai-chat-messages" class="ai-chat-body p-3">
+            <div class="ai-msg-box bot">
+                <div class="msg-content">Neural Insight Node active. How can I assist with your forensic investigation?</div>
+            </div>
+        </div>
+        <div class="ai-chat-footer p-2 border-top border-secondary">
+            <div class="input-group">
+                <input type="text" id="ai-chat-input" class="form-control" placeholder="Ask AI Analyst (e.g. 'Show me DDoS attempts from today')..." onkeydown="if(event.key==='Enter') sendAIChat()">
+                <button class="btn btn-primary" onclick="sendAIChat()"><i class="fas fa-location-arrow"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <button id="ai-chat-trigger" class="btn btn-primary rounded-circle shadow-pulse" onclick="toggleChat()" title="Deploy conversational AI Analyst">
+        <i class="fas fa-comment-dots fa-lg"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('theme-toggle').addEventListener('click', function () {
+            let current = document.documentElement.getAttribute('data-theme');
+            let next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            
+            const icon = this.querySelector('i');
+            if (next === 'dark') {
+                icon.className = 'fas fa-moon';
+            } else {
+                icon.className = 'fas fa-sun';
+            }
+        });
+
+        // --- PHASE 2: GENAI CHAT LOGIC ---
+        function toggleChat() {
+            const chatHub = document.getElementById('ai-chat-hub');
+            chatHub.classList.toggle('active');
+        }
+
+        async function sendAIChat() {
+            const input = document.getElementById('ai-chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            const chatBody = document.getElementById('ai-chat-messages');
+            
+            // Append User Message
+            const userBox = document.createElement('div');
+            userBox.className = 'ai-msg-box user mb-3';
+            userBox.innerHTML = `<div class="msg-content">${msg}</div>`;
+            chatBody.appendChild(userBox);
+            input.value = '';
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Append Loading Indicator
+            const loadingBox = document.createElement('div');
+            loadingBox.className = 'ai-msg-box bot mb-3';
+            loadingBox.innerHTML = `<div class="msg-content"><i class="fas fa-dna fa-spin me-2"></i> Analyzing SOC Telemetry...</div>`;
+            chatBody.appendChild(loadingBox);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            try {
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await response.json();
+                
+                // Replace Loading indicator with real response
+                let html = data.response.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                loadingBox.querySelector('.msg-content').innerHTML = html;
+            } catch (error) {
+                loadingBox.querySelector('.msg-content').innerHTML = `Forensic Interface Exception: ${error.message}`;
+            }
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+    </script>
+    
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Phase 7: Topology Graphing Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.26.0/cytoscape.min.js"></script>
+    <script>
+        // --- Phase 7: Network Topology Map Logic ---
+        let cy = cytoscape({
+            container: document.getElementById('cy'),
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'background-color': '#00d2ff',
+                        'label': 'data(id)',
+                        'color': '#fff',
+                        'font-family': '"Fira Code", monospace',
+                        'font-size': '10px',
+                        'width': '35px',
+                        'height': '35px',
+                        'text-valign': 'center',
+                        'text-halign': 'bottom',
+                        'text-margin-y': '5px',
+                        'border-width': 2,
+                        'border-color': '#00F7FF',
+                        'border-opacity': 0.8,
+                        'text-outline-color': '#00d2ff',
+                        'text-outline-width': 1,
+                        'overlay-padding': '3px',
+                        'transition-property': 'background-color, border-color, width, height',
+                        'transition-duration': '0.3s'
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 2,
+                        'line-color': '#2a2d3e',
+                        'target-arrow-color': '#00d2ff',
+                        'target-arrow-shape': 'triangle',
+                        'curve-style': 'bezier',
+                        'opacity': 0.8,
+                        'line-dash-pattern': [4, 4],
+                        'line-dash-offset': 24,
+                        'transition-property': 'line-color, width',
+                        'transition-duration': '0.3s'
+                    }
+                },
+                {
+                    selector: '.threat',
+                    style: {
+                        'background-color': '#ff4d4d',
+                        'border-color': '#ff0000',
+                        'border-width': 3,
+                        'width': '45px',
+                        'height': '45px',
+                        'text-outline-color': '#ff0000',
+                        'box-shadow': '0 0 15px #ff4d4d'
+                    }
+                },
+                {
+                    selector: '.active-flow',
+                    style: {
+                        'line-color': '#00F7FF',
+                        'width': 4,
+                        'target-arrow-color': '#00F7FF'
+                    }
+                }
+            ],
+            layout: { 
+                name: 'cose', 
+                animate: true, 
+                animationDuration: 500,
+                refresh: 20,
+                fit: true,
+                padding: 30,
+                nodeRepulsion: 4500,
+                idealEdgeLength: 100
+            }
+        });
+
+        // --- Topology Animation Orchestrator ---
+        let edgeSequence = 0;
+        function animateEdges() {
+            edgeSequence -= 1;
+            cy.edges().style('line-dash-offset', edgeSequence);
+            requestAnimationFrame(animateEdges);
+        }
+        animateEdges();
+
+        function updateTopology(src, dst, isThreat) {
+            if (!src || !dst) return;
+            
+            // Add nodes if they don't exist
+            [src, dst].forEach(ip => {
+                if (cy.getElementById(ip).empty()) {
+                    cy.add({ data: { id: ip } });
+                }
+            });
+
+            const edgeId = `${src}-${dst}`;
+            let edge = cy.getElementById(edgeId);
+
+            if (edge.empty()) {
+                edge = cy.add({ data: { id: edgeId, source: src, target: dst } });
+                // Only run layout for new connections to prevent UI jumping
+                cy.layout({ 
+                    name: 'cose', 
+                    animate: true, 
+                    fit: false, 
+                    randomize: false,
+                    componentSpacing: 100,
+                    nodeRepulsion: 4500 
+                }).run();
+            }
+
+            // Visual pulse for the flow
+            if (isThreat) {
+                cy.getElementById(src).addClass('threat');
+                edge.addClass('threat-flow');
+                edge.animate({
+                    style: { 'line-color': '#ff4d4d', 'width': 5 }
+                }, {
+                    duration: 1000,
+                    complete: () => {
+                        edge.animate({ style: { 'line-color': '#2a2d3e', 'width': 2 } }, { duration: 2000 });
+                    }
+                });
+            } else {
+                edge.addClass('active-flow');
+                setTimeout(() => edge.removeClass('active-flow'), 2000);
+            }
+        }
+        const intelModal = new bootstrap.Modal(document.getElementById('intelModal'));
+        
+        // --- RELIABILITY FIX: Ensure maps resize when tabs are shown ---
+        document.getElementById('topology-tab').addEventListener('shown.bs.tab', function () {
+            setTimeout(() => {
+                cy.resize();
+                cy.fit();
+            }, 300);
+        });
+        document.getElementById('map-tab').addEventListener('shown.bs.tab', function () {
+            // Give a tiny delay so the DOM completely repaints before firing the layout recalculation 
+            setTimeout(() => { map.invalidateSize(); }, 300);
+        });
+
+        function triggerSimulatedAttack() {
+            fetch('/simulate_attack', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const stopBtn = document.getElementById('stop-sim-btn');
+                    if(stopBtn) stopBtn.classList.remove('d-none');
+                });
+        }
+
+        function getStrategicBrief() {
+            document.getElementById('intel-brief-content').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3">Synthesizing threat narratives via Gemini...</p>
+                </div>`;
+            intelModal.show();
+            
+            fetch('/api/soc/intel_summary')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('intel-brief-content').innerHTML = `
+                        <div class="animate__animated animate__fadeIn" style="color: var(--text-color) !important; font-weight: 500;">
+                            ${data.intel_brief.replace(/\n\n/g, '<br><br>')}
+                        </div>
+                    `;
+                })
+                .catch(err => {
+                    document.getElementById('intel-brief-content').innerHTML = `<div class="alert alert-danger">Intel synthesis failed: ${err.message}</div>`;
+                });
+        }
+
+        function stopSimulatedAttack() {
+            fetch('/stop_simulation', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const stopBtn = document.getElementById('stop-sim-btn');
+                    if(stopBtn) stopBtn.classList.add('d-none');
+                });
+        }
+
+        function restartSniffing() {
+            fetch('/restart_sniffing', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    document.getElementById('stop-sniff-btn').classList.remove('d-none');
+                    document.getElementById('capture-mode-badge').innerText = 'Native PCAP Engine Active';
+                    document.getElementById('capture-mode-badge').classList.replace('bg-secondary', 'bg-primary');
+                });
+        }
+
+        function stopSniffing() {
+            fetch('/stop_sniffing', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    document.getElementById('stop-sniff-btn').classList.add('d-none');
+                    document.getElementById('capture-mode-badge').innerText = 'Sniffer Stopped';
+                    document.getElementById('capture-mode-badge').classList.replace('bg-primary', 'bg-secondary');
+                });
+        }
+
+        const map = L.map('threat-map', {
+            center: [20, 0],
+            zoom: 2,
+            zoomControl: false,
+            attributionControl: false,
+            maxBounds: [[-90, -180], [90, 180]],
+            maxBoundsViscosity: 1.0
+        });
+        
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 16,
+            noWrap: true,
+            bounds: [[-90, -180], [90, 180]],
+            attribution: 'Tiles © Esri'
+        }).addTo(map);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 16,
+            noWrap: true,
+            bounds: [[-90, -180], [90, 180]]
+        }).addTo(map);
+
+        const markers = [];
+        const customIcon = L.divIcon({
+            className: 'glowing-red-dot',
+            iconSize: [12, 12]
+        });
+
+        function plotThreatOnMap(lat, lon, attackType) {
+            if(!lat || !lon) return;
+            const marker = L.marker([lat, lon], {icon: customIcon}).addTo(map);
+            marker.bindPopup(`<b>Threat!</b><br>${attackType}`).openPopup();
+            
+            // Auto remove marker after 8 seconds
+            setTimeout(() => {
+                map.removeLayer(marker);
+            }, 8000);
+        }
+
+        // --- CHART SETUP ---
+        let totalCount = 0;
+        let benignCount = 0;
+        let threatCount = 0;
+
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        const trafficChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Threat Packets',
+                        borderColor: '#ff4444',
+                        backgroundColor: 'rgba(255, 68, 68, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        data: []
+                    },
+                    {
+                        label: 'Benign Packets',
+                        borderColor: '#00C851',
+                        backgroundColor: 'rgba(0, 200, 81, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        data: []
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: '#333' }, ticks: { color: '#888' } },
+                    y: { grid: { color: '#333' }, ticks: { color: '#888', stepSize: 1 }, beginAtZero: true }
+                },
+                plugins: { legend: { labels: { color: '#fff' } } },
+                animation: { duration: 0 }
+            }
+        });
+
+        const pieCtx = document.getElementById('threatPieChart').getContext('2d');
+        const threatPieChart = new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: ['#ff4444', '#ffbb33', '#00C851', '#33b5e5', '#aa66cc', '#d1d1d1'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: '#fff', boxWidth: 12 } } }
+            }
+        });
+
+        const threatDistributionMap = {};
+
+        let bucketThreats = 0;
+        let bucketBenign = 0;
+
+        setInterval(() => {
+            const timeLabel = new Date().toLocaleTimeString();
+            
+            trafficChart.data.labels.push(timeLabel);
+            trafficChart.data.datasets[0].data.push(bucketThreats);
+            trafficChart.data.datasets[1].data.push(bucketBenign);
+            
+            if (trafficChart.data.labels.length > 20) {
+                trafficChart.data.labels.shift();
+                trafficChart.data.datasets[0].data.shift();
+                trafficChart.data.datasets[1].data.shift();
+            }
+            
+            trafficChart.update();
+            bucketThreats = 0;
+            bucketBenign = 0;
+        }, 2000);
+
+        // --- SSE LOGIC ---
+        const evtSource = new EventSource("/stream");
+
+        evtSource.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+
+            // Mode Indicator Logic
+            const badge = document.getElementById('capture-mode-badge');
+            if (badge) {
+                if (data.mode === 'live') {
+                    badge.className = 'badge rounded-pill bg-danger text-light mt-2 blink_text';
+                    badge.innerHTML = '<i class="fas fa-broadcast-tower"></i> LIVE NETWORK CAPTURE (en0)';
+                } else if (data.mode === 'red_team') {
+                    badge.className = 'badge rounded-pill bg-danger text-light mt-2 blink_text';
+                    badge.innerHTML = '<i class="fas fa-biohazard"></i> RED TEAM SIMULATION SCENARIO ACTIVE';
+                } else {
+                    badge.className = 'badge rounded-pill bg-secondary text-light mt-2';
+                    badge.innerHTML = '<i class="fas fa-desktop"></i> DEMO SIMULATOR (Run `sudo python app.py` for live)';
+                }
+            }
+
+            // --- Phase 7: Network Topology Stream Integration ---
+            if (data.Source_IP && data.Dest_IP) {
+                updateTopology(data.Source_IP, data.Dest_IP, data.is_threat);
+            }
+
+            totalCount++;
+            if (data.is_threat) {
+                threatCount++;
+                bucketThreats++;
+                
+                // Plot on the new map
+                if(data.lat !== null && data.lon !== null) {
+                    plotThreatOnMap(data.lat, data.lon, data.Label);
+                }
+
+                if (threatDistributionMap[data.Label]) {
+                    threatDistributionMap[data.Label]++;
+                } else {
+                    threatDistributionMap[data.Label] = 1;
+                }
+                threatPieChart.data.labels = Object.keys(threatDistributionMap);
+                threatPieChart.data.datasets[0].data = Object.values(threatDistributionMap);
+                threatPieChart.update();
+
+            } else {
+                benignCount++;
+                bucketBenign++;
+            }
+
+            document.getElementById('total-packets').innerText = totalCount;
+            document.getElementById('benign-count').innerText = benignCount;
+            document.getElementById('threat-count').innerText = threatCount;
+
+            const tbody = document.getElementById('live-table-body');
+            const newRow = document.createElement('tr');
+
+            if (data.is_threat) {
+                newRow.style.backgroundColor = "rgba(220, 53, 69, 0.2)";
+            }
+
+            const now = new Date();
+            const timeStr = now.toISOString().split('T')[0] + ' ' + now.toLocaleTimeString([], { hour12: false });
+            
+            let actionsHtml = `<button class="btn btn-sm btn-outline-info" title="View Details" onclick="window.location.href='/logs'"><i class="fas fa-search"></i></button>`;
+            if (data.is_threat) {
+                actionsHtml += ` <button class="btn btn-sm btn-outline-danger" title="🛡️ Block IP and Nullify Route" onclick="blockIP('${data.Source_IP}', 'Real-time detection')"><i class="fas fa-shield-halved"></i></button>`;
+            }
+
+            newRow.innerHTML = `
+                <td>${timeStr}</td>
+                <td><span style="color: #888;">${data.Flow_ID}</span></td>
+                <td><span style="color: #4a90e2; font-weight: 600;">${data.Source_IP}</span></td>
+                <td class="${data.is_threat ? 'text-threat-high' : 'text-threat-low'}">${data.Label}</td>
+                <td><span class="badge bg-secondary">${data.Conf}</span></td>
+                <td><span class="badge bg-${data.osint_score > 70 ? 'danger' : (data.osint_score > 20 ? 'warning' : 'success')}">${data.osint_score}% OSINT</span></td>
+                <td>${actionsHtml}</td>
+            `;
+
+            tbody.insertBefore(newRow, tbody.firstChild);
+
+            if (tbody.children.length > 50) {
+                tbody.removeChild(tbody.lastChild);
+            }
+        };
+
+        evtSource.onerror = function (err) {
+            console.error("EventSource failed:", err);
+        };
+
+        // --- PHASE 1: ACTIVE DEFENSE AJAX ---
+        async function blockIP(ip, reason) {
+            if (!confirm(`CRITICAL: Block IP ${ip}? This will enforce a system-level firewall drop.`)) return;
+            
+            try {
+                const response = await fetch('/api/firewall/block', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ip: ip, reason: reason })
+                });
+                const data = await response.json();
+                alert(data.status);
+            } catch (error) {
+                alert(`IPS Execution failure: ${error.message}`);
+            }
+        }
+
+        async function toggleAutoPilot(enabled) {
+            try {
+                const response = await fetch('/api/settings/auto_pilot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: enabled })
+                });
+                const data = await response.json();
+                console.log(data.status);
+            } catch (error) {
+                alert(`Setting update failed: ${error.message}`);
+            }
+        }
+
+        // Initialize status on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/api/firewall/status');
+                const data = await response.json();
+                const toggle = document.getElementById('autoPilotToggle');
+                if (toggle) toggle.checked = data.auto_pilot;
+            } catch (e) {}
+            // Start Deception Polling
+            updateDeceptionHits();
+            setInterval(updateDeceptionHits, 10000);
+            // System Health Initial Poll
+            updateSystemHealth();
+            setInterval(updateSystemHealth, 5000);
+        });
+
+        function updateSystemHealth() {
+            fetch('/api/system/health')
+                .then(r => r.json())
+                .then(data => {
+                    const cpuEl = document.getElementById('health-cpu');
+                    const memEl = document.getElementById('health-mem');
+                    const statusEl = document.getElementById('health-status');
+                    
+                    if (cpuEl) cpuEl.innerText = `${data.cpu_load}%`;
+                    if (memEl) memEl.innerText = `${data.memory_used}%`;
+                    if (statusEl) {
+                        const statusText = data.sniffer_status.toUpperCase();
+                        statusEl.innerHTML = `<i class="fas fa-${data.sniffer_status === 'Operational' ? 'circle-notch fa-spin' : 'exclamation-triangle'} me-2"></i> SNIFFER: ${statusText}`;
+                        
+                        // Update status colors without clearing existing indicator classes
+                        if (data.sniffer_status === 'Operational') {
+                            statusEl.classList.remove('text-danger', 'border-danger');
+                            statusEl.classList.add('text-cyan-glow', 'border-info');
+                        } else {
+                            statusEl.classList.remove('text-cyan-glow', 'border-info');
+                            statusEl.classList.add('text-danger', 'border-danger');
+                        }
+                    }
+                }).catch(e => console.error("Health Update Error:", e));
+        }
+
+        function updateDeceptionHits() {
+            fetch('/api/deception/hits')
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('deception-hits');
+                    if (!container) return;
+                    if (data.length === 0) {
+                        container.innerHTML = '<p class="text-muted text-center py-5">No adversaries trapped yet.</p>';
+                        return;
+                    }
+                    container.innerHTML = data.map(hit => `
+                        <div class="p-2 mb-2 rounded border border-warning" style="background: rgba(255,193,7,0.05)">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-warning fw-bold"><i class="fas fa-ghost"></i> ${hit.ip}</span>
+                                <span class="badge bg-dark">${hit.time}</span>
+                            </div>
+                            <div class="mt-1 d-flex gap-2">
+                                <span class="badge bg-secondary">Port ${hit.port}</span>
+                                ${hit.banned ? '<span class="badge bg-danger">Banned</span>' : '<span class="badge bg-warning text-dark">Detected</span>'}
+                            </div>
+                            <div class="text-muted mt-1" style="font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                Payload: ${hit.payload}
+                            </div>
+                        </div>
+                    `).join('');
+                }).catch(e => console.error("Deception Update Error:", e));
+        }
+    </script>
+
+
+</body>
+
+</html>
