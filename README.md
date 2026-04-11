@@ -16,6 +16,10 @@
 
 > **A state-of-the-art, autonomous Security Operations Center (SOC) platform. This system integrates real-time deep learning inference, predictive network topology, and AI-powered forensic reporting into a unified, glassmorphic command center.**
 
+<br/>
+
+**🌐 Online Access / Deployment (GitHub Pages):** [https://mohdhassaan12.github.io/ai-powered-intrusion-detection-system/](https://mohdhassaan12.github.io/ai-powered-intrusion-detection-system/)
+
 </div>
 
 ---
